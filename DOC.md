@@ -236,6 +236,7 @@ This article mainly explains the concept,design of metadata and how to connect i
 
  - Add a new table in the database,and data can synchronize to the JVM memory of gateway according to the data synchronization scheme.
  - Table Structure:
+
 ```
 CREATE TABLE  IF NOT EXISTS `meta_data` (
 `id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'id',
@@ -254,10 +255,12 @@ PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 ```
+
  	* Metadata design as below,the most important is using it in dubbo’s generalization call.
  	* Pay attention to the field `path`,we will match specific data according to your field path during requesting gateway,and then carry out the follow-up process.
  	* Pay attention to the field `rpc_ext`,if it is a dubbo service interface and service interface has group and version field,this field exists.
  	* dubbo field structure as below,then we store json format string.
+ 	
 ```
  	public static class RpcExt {
 
