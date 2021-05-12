@@ -18,11 +18,11 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
 
 
 ## Table of Contets
- * [What is the Soul]()
- * [Features]()
- 	* [Architecture]()
- * [Design]()
- 	* [Database Design]()
+ * [What is the Soul](#what-is-the-soul)
+ * [Features](#features)
+ 	* [Architecture](#architecture-diagram)
+ * [Design](#design)
+ 	* [Database Design](#databse-design)
  	* [Config]()
  	* [DataSync]()
  	* [MetaData]()
@@ -30,5 +30,5 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
 
  ## Design
 
- ## Database Design
+ ### Database Design
 
