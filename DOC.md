@@ -106,3 +106,15 @@ As showing picture below,`soul-admin` will issue a configuration change notifica
  - If it is a `websocket` synchronization strategy, it will push modified data to `soul-web`,and corresponding `WebsocketCacheHandler` handler will handle `admin` data push at the gateway layer
  - If it is a `zookeeper` synchronization strategy, it will push modified data to `zookeeper`,and the `ZookeeperSyncCache` will monitor the data changes of `zookeeper` and process them
  - If it is a `http` synchronization strategy,`soul-web` proactively initiates long polling requests,90 seconds timeout by default,if there is no modified data in `soul-admin`,http request will be blocked,if there is a data change, it will respond to the changed data information,if there is no data change after 60 seconds,then respond with empty data,gateway continue to make http request after getting response,this kind of request will repeat 
+
+![](img/diagrams/synchonization_type.png)
+
+#### Zookeeper Synchronization
+
+The zookeeper-based synchronization principle is very simple,it mainly depends on `zookeeper` watch mechanism,`soul-web` will monitor the configured node,when 	`soul-admin` starts, all the data will be written to `zookeeper`,it will incrementally update the nodes of `zookeeper` when data changes,at the same time, `soul-web` will monitor the node for configuration information, and update the local cache once the information changes.
+
+![](img/diagrams/zookepear_sync.png)
+
+`soul` writes the configuration information to the zookeeper node,and it is meticulously designed.
+
+#### WebSocket Synchronization
