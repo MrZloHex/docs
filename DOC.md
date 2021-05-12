@@ -24,7 +24,7 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  * [Design](#design)
  	* [Database Design](#database-design)
  	* [Config](#configuration-flow-introduction)
- 	* [DataSync]()
+ 	* [DataSync](#data-synchronization-design)
  	* [MetaData]()
  * [Admin]()
 
@@ -155,3 +155,76 @@ public class WebsocketSyncCache extends WebsocketCacheHandler {
 ```
 
 #### Http Long Polling
+
+The mechanism of zookeeper and websocket data synchronization is relatively simple,but http synchronization will be relatively complicated.Soul borrows the design ideas of `Apollo` and `Nacos` and realizes `http` long polling data synchronization using their advantages.Note that this is not traditional ajax long polling.
+
+![http long polling mechanism as above,soul-web gateway requests admin configuration services,timeout is 90 seconds,it means gateway layer request configuration service will wait at most 90 seconds,this is convenient for admin configuration service to respond modified data in time,and therefore we realize near real-time push.](img/diagrams/http_sync.png)
+
+After the http request reaches soul-admin, it does not respond immediately,but uses the asynchronous mechanism of Servlet3.0 to asynchronously respond to the data.First of all,put long polling request task `LongPollingClient` into `BlocingQueue`,and then start scheduling task,execute after 60 seconds,this aims to remove the long polling request from the queue after 60 seconds,even there is no configured data change.Because even if there is no configuration change,gateway also need to know,otherwise it will wait,and there is a 90 seconds timeout when the gateway requests configuration services.
+
+```
+public void doLongPolling(final HttpServletRequest request, final HttpServletResponse response) {
+    // since soul-web may not receive notification of a configuration change, MD5 value may be different,so respond immediately
+    List<ConfigGroupEnum> changedGroup = compareMD5(request);
+    String clientIp = getRemoteIp(request);
+    if (CollectionUtils.isNotEmpty(changedGroup)) {
+        this.generateResponse(response, changedGroup);
+        return;
+    }
+
+    // Servlet3.0 asynchronously responds to http request
+    final AsyncContext asyncContext = request.startAsync();
+    asyncContext.setTimeout(0L);
+    scheduler.execute(new LongPollingClient(asyncContext, clientIp, 60));
+}
+    
+class LongPollingClient implements Runnable {
+    LongPollingClient(final AsyncContext ac, final String ip, final long timeoutTime) {
+        // omit......
+    }
+    @Override
+    public void run() {
+        // join a scheduled task, if there is no configuration change within 60 seconds, it will be executed after 60 seconds and respond to http requests
+        this.asyncTimeoutFuture = scheduler.schedule(() -> {
+            // clients are blocked queue,saved the request from soul-web
+            clients.remove(LongPollingClient.this);
+            List<ConfigGroupEnum> changedGroups = HttpLongPollingDataChangedListener.compareMD5((HttpServletRequest) asyncContext.getRequest());
+            sendResponse(changedGroups);
+        }, timeoutTime, TimeUnit.MILLISECONDS);
+        // 
+        clients.add(this);
+    }
+}
+```
+
+If the administrator changes the configuration data during this period,the long polling requests in the queue will be removed one by one, and respond which group’s data has changed(we distribute plugins, rules, flow configuration , user configuration data into different groups).After gateway receives response,it only knows which Group has changed its configuration,it need to request again to get group configuration data.Someone may ask,why don’t you write out the changed data directly?We also discussed this issue deeply during development, because the http long polling mechanism can only guarantee quasi real-time,if gateway layer does not handle it in time,or administrator updates configuration frequently,we probably missed some configuration change push.For security, we only inform that a certain Group information has changed.
+
+```
+// soul-admin configuration changed,remove the requests from the queue one by one and respond to them
+class DataChangeTask implements Runnable {
+    DataChangeTask(final ConfigGroupEnum groupKey) {
+        this.groupKey = groupKey;
+    }
+    @Override
+    public void run() {
+        try {
+            for (Iterator<LongPollingClient> iter = clients.iterator(); iter.hasNext(); ) {
+                LongPollingClient client = iter.next();
+                iter.remove();
+                client.sendResponse(Collections.singletonList(groupKey));
+            }
+        } catch (Throwable e) {
+            LOGGER.error("data change error.", e);
+        }
+    }
+}
+```
+
+When `soul-web` gateway layer receives the http response information,pull modified information(if exists),and then request `soul-admin` configuration service again,this will repeatedly execute.
+
+#### At Last
+
+This article introduces that,in order to optimize the response speed, `soul` as a highly available micro service gateway, its three ways to cache the configuration rule selector data locally.After learning this article,I believe you have a certain understanding of the popular configuration center,it may be easier to learn their codes,I believe you can also write a distributed configuration center.Version 3.0 is already under planning,and I believe it will definitely surprise you.
+
+### MetaData Concept Design
+
