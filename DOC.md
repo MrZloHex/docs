@@ -253,7 +253,6 @@ CREATE TABLE  IF NOT EXISTS `meta_data` (
 `enabled` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'enable status',
 PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
 ```
 
  - Metadata design as below,the most important is using it in dubbo’s generalization call.
@@ -277,4 +276,99 @@ public static class RpcExt {
  - A dubbo interface corresponds to a meta data.
  - SpringCloud protocol, only store one record, path: `/contextPath/**`.
  - Http service, no data.
+
+## Admin
+
+### Dict Management
+
+#### Explanation
+
+Dictionary management is primarily used to maintain and manage common data dictionaries.
+
+#### Table design
+
+ - sql
+
+```
+CREATE TABLE IF NOT EXISTS `soul_dict` (
+   `id` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'primary key id',
+   `type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'type',
+   `dict_code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'dictionary encoding',
+   `dict_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'dictionary name',
+   `dict_value` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'dictionary value',
+   `desc` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'dictionary description or remarks',
+   `sort` int(4) NOT NULL COMMENT 'sort',
+   `enabled` tinyint(4) DEFAULT NULL COMMENT 'whether it is enabled',
+   `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
+   `date_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
+   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+ - The current usage scenario is when the plugin `handle` configuring the `data_type=3` `(select box)`
+
+eg. `degradeRuleGrade` is one of fields of sentinel’s `handle` json
+
+When it adds rules, it automatically looks up all the general dictionaries of `type='degradeRuleGrade'` in the `soul_dict` table as a select-box when you edit the General rules field
+
+### Plugin Handle Explanation
+
+#### Explanation
+
+ - In our Soul-Admin background, each plugin uses the Handle field to represent a different processing, and plugin processing is used to manage and edit custom processing fields in JSON.
+ - This feature is mainly used to support the plug-in handling template configuration
+
+#### Table Design
+
+ - sql
+
+```
+CREATE TABLE IF NOT EXISTS `plugin_handle` (
+`id` varchar(128) NOT NULL,
+`plugin_id` varchar(128) NOT NULL COMMENT 'plugin id',
+`field` varchar(100) NOT NULL COMMENT 'field',
+`label` varchar(100) DEFAULT NULL COMMENT 'label',
+`data_type` smallint(6) NOT NULL DEFAULT '1' COMMENT 'data type 1 number 2 string 3 select box',
+`type` smallint(6) NULL COMMENT 'type, 1 means selector, 2 means rule',
+`sort` int(4)  NULL COMMENT 'sort',
+`ext_obj` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'extra configuration (json format data)',
+`date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
+`date_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
+PRIMARY KEY (`id`),
+UNIQUE KEY `plugin_id_field_type` (`plugin_id`,`field`,`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+```
+
+#### Tutorial
+
+eg. When we developed the `springCloud` plugin, the rule table needed to store some configuration into the handle field, Configure the corresponding entity class as follows:
+
+```
+public class SpringCloudRuleHandle implements RuleHandle {
+    
+    /**
+     * this remote uri path.
+     */
+    private String path;
+    
+    /**
+     * timeout is required.
+     */
+    private long timeout = Constants.TIME_OUT;    
+}
+```
+
+**step1**. We can go directly to the plug-in management link `http://localhost:9095/#/system/plugin` Click Edit Plugin for processing 
+
+![](img/tutorials/admin/step_1.png)
+
+**step2**. Add a string type field path and a numeric type TIMEOUT
+
+![](img/tutorials/admin/step_2.png)
+
+**step3**. Finally, you can enter path, TIMEOUT and commit to the handle field when you add a rule in the plugin rule configuration page
+
+![](img/tutorials/admin/step_3.png)
+
+*Note: If data_type is configured to be `3` `selection box`, the input field drop-down selection on the new rule page is displayed by going to the `soul_dict` table to find all the options available*
 
