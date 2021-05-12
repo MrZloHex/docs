@@ -619,6 +619,7 @@ Explain register center access config
 #### HTTP Registry
 
 **Soul-Admin**
+
 Set the config in application.yml
 
 ```yml
@@ -632,6 +633,7 @@ soul:
 ```
 
 **Soul-Client**
+
 Set the config in application.yml
 
 ```yml
@@ -655,6 +657,7 @@ soul:
 #### Zookeeper Registry
 
 **Soul-Admin**
+
 Add dependency in pom.xml (Default has been added):
 
 ```xml
@@ -688,6 +691,7 @@ soul:
 #### Etcd Registry
 
 **Soul-Admin**
+
 Add dependency in pom.xml (Default has been added):
 
 ```xml
@@ -711,6 +715,7 @@ soul:
 ```
 
 **Soul-Client**
+
 Add dependency in pom.xml (Default has been added):
 
 ```xml
@@ -743,7 +748,7 @@ soul:
 
 #### Consul Registry
 
-**Consul Registry**
+**Soul-Admin**
 
 Add dependency in pom.xml :
 
@@ -794,7 +799,9 @@ spring:
 ```
 
 **Soul-Client**
+
 **Note, consul registry is not compatible with current and SpringCloud will and Eureka / Nacos registry conflicts**
+
 Add dependency in pom.xml (need add by yourself, suggest use 2.2.6.RELEASE version, other version maybe can’t work)：
 
 ```xml
@@ -836,6 +843,76 @@ spring:
 # host: Consul server host, the default value is localhost.
 # port: Consul server port, the default value is 8500.
 ```
+
+#### Nacos Registry
+
+**Soul-Admin**
+
+Add dependency in pom.xml (Default has been added):
+
+```xml
+<dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>soul-register-server-nacos</artifactId>
+            <version>${project.version}</version>
+</dependency>
+```
+
+Set the config in application.yml
+
+```yml
+soul:
+  register:
+    registerType: nacos
+    serverLists : localhost:8848
+    props:
+      nacosNameSpace: SoulRegisterCenter
+```
+
+**Soul-Client**
+
+Add dependency in pom.xml (Default has been added):
+
+```xml
+<dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>soul-register-client-nacos</artifactId>
+            <version>${project.version}</version>
+</dependency>
+```
+
+Set the config in application.yml
+
+```yml
+soul:
+  client:
+    registerType: nacos
+    serverLists: localhost:8848
+    props:
+      contextPath: /http
+      appName: http
+      port: 8188  
+      isFull: false
+      nacosNameSpace: SoulRegisterCenter
+# registerType : register type, set etcd 
+# serverList: when register type is etcd, add etcd address list
+# port: your project port number; apply to springmvc/tars/grpc
+# contextPath: your project's route prefix through soul gateway, such as /order ，/product etc，gateway will route based on it.
+# appName：your project name,the default value is`spring.application.name`.
+# isFull: set true means providing proxy for your entire service, or only a few controller. apply to springmvc/springcloud
+# nacosNameSpace: nacos namespace
+
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
