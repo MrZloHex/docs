@@ -505,7 +505,7 @@ Principle of `http` register center is simple. Call interface of register server
 
 Zookeeper storage struct is:
 
-```
+```sh
 soul
    ├──regsiter
    ├    ├──metadata
@@ -525,7 +525,7 @@ soul
 
 Etcd storage struct is:
 
-```
+```sh
 soul
    ├──regsiter
    ├    ├──metadata
@@ -549,7 +549,7 @@ Consul register client will save `URIRegisterDTO` to service instance metadata, 
 
 And Consul register client will save MetaDataRegisterDTO to Key/Value store, storage struct is:
 
-```
+```sh
 soul
    ├──regsiter
    ├    ├──metadata
@@ -567,13 +567,13 @@ Nacos register have two parts：`URI` and `Metadata`
 
 `URI` service’s instance name will be named like below. Every `URI` instance has `ip`, `port` and `contextPath` as `identifiers`.
 
-```shell
+```sh
 soul.register.service.${rpcType}
 ```
 
 When `URI` instance up, it will publish metadata config. It’s name like below.
 
-```shell
+```sh
 soul.register.service.${rpcType}.${contextPath}
 ```
 
