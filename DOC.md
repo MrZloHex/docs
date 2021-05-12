@@ -585,7 +585,7 @@ Trigger selector and rule data update and event will be published, when metadata
 
 | *SPI Name*                            | *Description*                         |
 | ------------------------------------- | ------------------------------------- |
-|SoulClientRegisterRepository			|	Soul client register SPI 			|
+| SoulClientRegisterRepository			|	Soul client register SPI 			|
 
 
 | *Implementation Class*			| *Description*							 |
@@ -595,6 +595,30 @@ Trigger selector and rule data update and event will be published, when metadata
 | EtcdClientRegisterRepository  	| 	Etcd client register repository 	 |
 | ConsulClientRegisterRepository 	| 	Consul client register repository 	 |
 | NacosClientRegisterRepository 	| 	Nacos client register repository 	 |
+
+| *SPI Name*                            | *Description*                         |
+| ------------------------------------- | ------------------------------------- |
+| SoulServerRegisterRepository			|	Soul server register SPI 			|
+
+| *Implementation Class*			| *Description*							 |
+| --------------------------------- | -------------------------------------- |
+| SoulHttpRegistryController  		| 	Http server register repository 	 |
+| ZookeeperServerRegisterRepository | 	Zookeeper server register repository |
+| EtcdServerRegisterRepository  	| 	Etcd server register repository 	 |
+| ConsulServerRegisterRepository 	| 	Consul server register repository 	 |
+| NacosServerRegisterRepository 	| 	Nacos server register repository 	 |
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
