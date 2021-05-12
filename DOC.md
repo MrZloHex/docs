@@ -40,12 +40,14 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  ![](img/diagrams/database_table.png)
  - Detailed design:
 	* One plugin corresponds to multiple selectors,one selector corresponds to multiple rules.
+
   	* One selector corresponds to multiple match conditions,one rule corresponds to multiple match conditions.
   	* Each rule handles differently in corresponding plugin according to field handler,field handler is a kind of data of JSON string type.You can view detail during the use of admin.
   	* Plugin use database to store user name,role,resource data and relationship.
  - The Permission Table UML Diagram: 
  ![](img/diagrams/database_permissions.png)
  - Detailed design:
+
   	* one user corresponds to multiple role,one role corresponds to multiple resources.
 
 ### Configuration Flow Introduction
@@ -63,7 +65,7 @@ This article introduces the flow of synchronizing to the gateway after the data 
  ![](img/diagrams/data_flow.png)
 
 #### Feature
- 
+
  - All the configurations of user can be dynamically updated, there is no need to restart the service for any modification.
  - Local cache is used to provide efficient performance during high concurrency.
 
@@ -126,7 +128,7 @@ The mechanism of `websocket` and `zookeeper` is similar,when the gateway and the
 
 When we use websocket synchronization,pay attention to reconnect after disconnection, which also called keep heartbeat.`Soul` uses `java-websocket` ,a third-party library,to connect to `websocket`.
 
-```
+```java
 public class WebsocketSyncCache extends WebsocketCacheHandler {
     /**
      * The Client.
@@ -165,7 +167,7 @@ The mechanism of zookeeper and websocket data synchronization is relatively simp
 
 After the http request reaches soul-admin, it does not respond immediately,but uses the asynchronous mechanism of Servlet3.0 to asynchronously respond to the data.First of all,put long polling request task `LongPollingClient` into `BlocingQueue`,and then start scheduling task,execute after 60 seconds,this aims to remove the long polling request from the queue after 60 seconds,even there is no configured data change.Because even if there is no configuration change,gateway also need to know,otherwise it will wait,and there is a 90 seconds timeout when the gateway requests configuration services.
 
-```
+```java
 public void doLongPolling(final HttpServletRequest request, final HttpServletResponse response) {
     // since soul-web may not receive notification of a configuration change, MD5 value may be different,so respond immediately
     List<ConfigGroupEnum> changedGroup = compareMD5(request);
@@ -202,7 +204,7 @@ class LongPollingClient implements Runnable {
 
 If the administrator changes the configuration data during this period,the long polling requests in the queue will be removed one by one, and respond which group’s data has changed(we distribute plugins, rules, flow configuration , user configuration data into different groups).After gateway receives response,it only knows which Group has changed its configuration,it need to request again to get group configuration data.Someone may ask,why don’t you write out the changed data directly?We also discussed this issue deeply during development, because the http long polling mechanism can only guarantee quasi real-time,if gateway layer does not handle it in time,or administrator updates configuration frequently,we probably missed some configuration change push.For security, we only inform that a certain Group information has changed.
 
-```
+```java
 // soul-admin configuration changed,remove the requests from the queue one by one and respond to them
 class DataChangeTask implements Runnable {
     DataChangeTask(final ConfigGroupEnum groupKey) {
@@ -240,7 +242,7 @@ This article mainly explains the concept,design of metadata and how to connect i
  - Add a new table in the database,and data can synchronize to the JVM memory of gateway according to the data synchronization scheme.
  - Table Structure:
 
-```
+```sql
 CREATE TABLE  IF NOT EXISTS `meta_data` (
 `id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'id',
 `app_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'application name',
@@ -263,7 +265,7 @@ PRIMARY KEY (`id`) USING BTREE
  - Pay attention to the field `rpc_ext`,if it is a dubbo service interface and service interface has group and version field,this field exists.
  - dubbo field structure as below,then we store json format string.
 
-```
+```java
 public static class RpcExt {
 
     private String group;
@@ -292,7 +294,7 @@ Dictionary management is primarily used to maintain and manage common data dicti
 
  - sql
 
-```
+```sql
 CREATE TABLE IF NOT EXISTS `soul_dict` (
    `id` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'primary key id',
    `type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'type',
@@ -323,9 +325,7 @@ When it adds rules, it automatically looks up all the general dictionaries of `t
 
 #### Table Design
 
- - sql
-
-```
+```sql
 CREATE TABLE IF NOT EXISTS `plugin_handle` (
 `id` varchar(128) NOT NULL,
 `plugin_id` varchar(128) NOT NULL COMMENT 'plugin id',
@@ -346,7 +346,7 @@ UNIQUE KEY `plugin_id_field_type` (`plugin_id`,`field`,`type`)
 
 eg. When we developed the `springCloud` plugin, the rule table needed to store some configuration into the handle field, Configure the corresponding entity class as follows:
 
-```
+```java
 public class SpringCloudRuleHandle implements RuleHandle {
     
     /**
@@ -394,6 +394,7 @@ public class SpringCloudRuleHandle implements RuleHandle {
 ![](img/examples/admin/selector.png)
 
  - selector detailed explanation：
+
  	* name：create your selector with a distinguish name.
  	* type：custom flow is customized request, full flow is full request. customized request will be handled by the conditions as below, while full request won’t.
  	* match method: you can combine these conditions with ‘and’ , ‘or’ operators.
@@ -422,24 +423,25 @@ public class SpringCloudRuleHandle implements RuleHandle {
  - when the request was passed by the seletor, then it will be processed by the rule, the final filter.
  - rule is the final confirmation about how to execute request logically.
  - rule detailed explanation：
+
  	* name：create your rule with a distinguish name.
  	* match method: you can combine these conditions with ‘and’ , ‘or’ operators.
-	* condition：
-		- uri: filter request with uri method and support fuzzy matching (/\*\*).
-		- header: filter request with request header.
-		- query: filter request with query string.
-		- ip: filter request with your real ip.
-		- host: filter request with your real host.
-		- post: not recommend to use.
-		- condition match:
-			* match : fuzzy string matching，recommend to combine with uri，support restful matching.（/test/\*\*）
-			* = : if the values are the same, then they match.
-			* regEx : regex matching，match characters in regex expression.
-			* like : string fuzzy matching.
-	* open option：only work with enabled.
-	* print log：it will print the matching log with the open option enabled.
-	* execution order：the smaller will have high priorty to execute among multi-rules.
-	* handle: different plugin has different execution method, pls refer to the specific one.
+ 	* condition：
+ 		- uri: filter request with uri method and support fuzzy matching (/\*\*).
+ 		- header: filter request with request header.
+ 		- query: filter request with query string.
+ 		- ip: filter request with your real ip.
+ 		- host: filter request with your real host.
+ 		- post: not recommend to use.
+ 		- condition match:
+ 			* match : fuzzy string matching，recommend to combine with uri，support restful matching.（/test/\*\*）
+ 			* = : if the values are the same, then they match.
+ 			* regEx : regex matching，match characters in regex expression.
+ 			* like : string fuzzy matching.
+ 	* open option：only work with enabled.
+ 	* print log：it will print the matching log with the open option enabled.
+ 	* execution order：the smaller will have high priorty to execute among multi-rules.
+ 	* handle: different plugin has different execution method, pls refer to the specific one.
  - above picture means: when the request `uri` equals to `/http/order/save`, it will execute based on this rule，load strategy is `random`.
  - combine selector means ：when the request `uri` is `/http/order/save`, it will be redicted to `1.1.1.1:8080` by `random` method.
  - rule advice: combine `uri` condition with `match` the real `uri path` condition as the final filter.
