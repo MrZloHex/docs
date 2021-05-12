@@ -75,4 +75,20 @@ This article mainly explains three ways of database synchronization and their pr
 
 Gateway is the entrance of request and it is a very important part in micro service architecture, therefore the importance of gateway high availability is self-evident. When we use gateway, we have to change configuration such as flow rule, route rule for satisfying business requirement. Therefore, the dynamic configuration of the gateway is an important factor to ensure the high availability of the gateway. Then, how does `Soul` support dynamic configuration?
 
-Anyone who has used `Soul` knows, `Soul` plugin are hot swap ,and the selector, rule of all plugins are dynamic configured, they take effect immediately without restarting service.But during using `Soul` gateway, users also report many problems
+Anyone who has used `Soul` knows, `Soul` plugin are hot swap ,and the selector, rule of all plugins are dynamic configured, they take effect immediately without restarting service.But during using `Soul` gateway, users also report many problems.
+
+ - Rely on `zookeeper`, this troubles users who use `etcd` `consul` and `nacos` registry
+ - Rely on `redis`, `influxdb`, I have not used the limiting plugin, monitoring plugin, why do I need these
+
+Therefore,we have done a partial reconstruction of `Soul`, after two months of version iteration, we released version `2.0`
+
+ - Data Synchronization removes the strong dependence on `zookeeper`,and we add `http long polling` and `websocket`
+ - Limiting plugin and monitoring plugin realize real dynamic configuration, we use `admin` backend for dynamic configuration instead of `yml` configuration before
+
+*Q: Someone may ask me,why don’t you use configuration center for synchronization?*
+
+First of all, it will add extra costs, not only for maintenance, but also make `Soul` heavy; In addition, using configuration center, data format is uncontrollable and it is not convenient for `soul-admin` to do configuration management.
+
+*Q: Someone may also ask,dynamic configuration update?Every time I can get latest data from database or redis,why are you making it complicated?*
+
+As a gateway, soul cached all the configuration in the `HashMap` of JVM in order to provide higher response speed and we use local cache for every request, It’s very fast. So this article can also be understood as three ways of memory synchronization in a distributed environment.
