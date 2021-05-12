@@ -446,3 +446,29 @@ public class SpringCloudRuleHandle implements RuleHandle {
  - combine selector means ：when the request `uri` is `/http/order/save`, it will be redicted to `1.1.1.1:8080` by `random` method.
  - rule advice: combine `uri` condition with `match` the real `uri path` condition as the final filter.
 
+#### Condition Explanation
+
+ - uri matching （recommend）
+ 	* uri matching is based on your request uri, the frontend won’t change anything before accessing the gateway.
+ 	* the `match` filter method is the same with `springmvc` fuzzy matching.
+ 	* in selector，we recommend to match with the prefix of uri, and use the specific path in rule.
+ 	* when changing the match method, the matching field name can be filled randomly, but make sure the match value must be correct.
+ - header matching
+ 	* header matches with your `http` request header value.
+ - query matching
+ 	* it matches the query string in your uri, such as: `/test?a=1&&b=2`.
+ 	* so you can add a new condition, choose query method: `a = 1`.
+ - ip matching
+ 	* it matches the ip of the http caller.
+ 	* especially in the waf plugin, if you find some ip is unsafe, you can add a match condition with this ip, then it can’t access any more.
+ 	* if you use nginx proxy before soul, you can get the right ip with refering to [Custom parsing IP and Host](#parsing-ip-and-host)
+ - host matching
+ 	* it matches the host of http caller.
+ 	* especially in waf plugin, if you find some host is unsafe, you can add a match condition with this host, then it can’t access any more.
+ 	* if you use nginx proxy before soul, you can get the right ip with refering to [Custom parsing IP and Host](#parsing-ip-and-host)
+ - post matching
+ 	* not recommend to use.
+
+## Developer Guide
+
+### Custom parsing IP and Host
