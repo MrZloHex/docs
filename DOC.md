@@ -256,20 +256,20 @@ PRIMARY KEY (`id`) USING BTREE
 
 ```
 
- 	* Metadata design as below,the most important is using it in dubbo’s generalization call.
- 	* Pay attention to the field `path`,we will match specific data according to your field path during requesting gateway,and then carry out the follow-up process.
- 	* Pay attention to the field `rpc_ext`,if it is a dubbo service interface and service interface has group and version field,this field exists.
- 	* dubbo field structure as below,then we store json format string.
- 	
+ 	- Metadata design as below,the most important is using it in dubbo’s generalization call.
+ 	- Pay attention to the field `path`,we will match specific data according to your field path during requesting gateway,and then carry out the follow-up process.
+ 	- Pay attention to the field `rpc_ext`,if it is a dubbo service interface and service interface has group and version field,this field exists.
+ 	- dubbo field structure as below,then we store json format string.
+
 ```
- 	public static class RpcExt {
+public static class RpcExt {
 
     private String group;
     private String version;
     private String loadbalance;
     private Integer retries;
     private Integer timeout;
- }
+}
 ```
 
 #### MetaDown Storage
