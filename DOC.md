@@ -583,7 +583,9 @@ Trigger selector and rule data update and event will be published, when metadata
 
 #### SPI
 
-
+| *SPI Name*                            | *Description*                         |
+| ------------------------------------- | ------------------------------------- |
+|SoulClientRegisterRepository			|	Soul client register SPI 			|
 
 
 
