@@ -22,7 +22,7 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  * [Features](#features)
  	* [Architecture](#architecture-diagram)
  * [Design](#design)
- 	* [Database Design](#databse-design)
+ 	* [Database Design](#database-design)
  	* [Config](#configuration-flow-introduction)
  	* [DataSync]()
  	* [MetaData]()
@@ -65,3 +65,14 @@ This article introduces the flow of synchronizing to the gateway after the data 
  - Local cache is used to provide efficient performance during high concurrency.
 
 
+### Data Synchronization Design
+
+#### Description
+
+This article mainly explains three ways of database synchronization and their principles.
+
+#### Preface
+
+Gateway is the entrance of request and it is a very important part in micro service architecture, therefore the importance of gateway high availability is self-evident. When we use gateway, we have to change configuration such as flow rule, route rule for satisfying business requirement. Therefore, the dynamic configuration of the gateway is an important factor to ensure the high availability of the gateway. Then, how does `Soul` support dynamic configuration?
+
+Anyone who has used `Soul` knows, `Soul` plugin are hot swap ,and the selector, rule of all plugins are dynamic configured, they take effect immediately without restarting service.But during using `Soul` gateway, users also report many problems
