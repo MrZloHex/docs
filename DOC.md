@@ -34,7 +34,8 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  	* [Register Center Design](#register-center-design)
  	* [Access](#register-center-access)
  * [User Guide](#user-guide)
- 	* [Set up](#environment-setup)	
+ 	* [Set up](#environment-setup)
+ 	* [Use Data Sync](#use-different-data-sync-strategy)	
  * [Developer Guide]()
 
 ## Design
@@ -1067,7 +1068,9 @@ soul :
 
  * Environment Setup has finished, now your project is launched.
 
+### Use Different Data-Sync Strategy
 
+#### Features
 
 
 
