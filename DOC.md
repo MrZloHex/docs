@@ -588,8 +588,13 @@ Trigger selector and rule data update and event will be published, when metadata
 |SoulClientRegisterRepository			|	Soul client register SPI 			|
 
 
-
-
+| *Implementation Class*			| *Description*							 |
+| --------------------------------- | -------------------------------------- |
+| HttpClientRegisterRepository  	| 	Http client register repository 	 |
+| ZookeeperClientRegisterRepository | 	Zookeeper client register repository |
+| EtcdClientRegisterRepository  	| 	Etcd client register repository 	 |
+| ConsulClientRegisterRepository 	| 	Consul client register repository 	 |
+| NacosClientRegisterRepository 	| 	Nacos client register repository 	 |
 
 
 
