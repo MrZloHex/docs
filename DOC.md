@@ -11,3 +11,9 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  - Built-in rich plugin support, authentication, limiting, fuse, firewall, etc.
  - Dynamic flow configuration, high performance.
  - Support cluster deployment, A/B Test, blue-green release.
+
+## Architecture Diagram
+
+![](img/diagrams/soul-framwork.png)
+
+
