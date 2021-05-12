@@ -23,7 +23,7 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  	* [Architecture](#architecture-diagram)
  * [Design](#design)
  	* [Database Design](#databse-design)
- 	* [Config]()
+ 	* [Config](#configuration-flow-introduction)
  	* [DataSync]()
  	* [MetaData]()
  * [Admin]()
@@ -38,7 +38,7 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  - Detailed design:
 	* One plugin corresponds to multiple selectors,one selector corresponds to multiple rules.
   	* One selector corresponds to multiple match conditions,one rule corresponds to multiple match conditions.
-  	* Each rule handles differently in corresponding plugin according to field handler,field handler is a kind of data of JSON string type.You can </br> view detail during the use of admin.
+  	* Each rule handles differently in corresponding plugin according to field handler,field handler is a kind of data of JSON string type.You can view detail during the use of admin.
   	* Plugin use database to store user name,role,resource data and relationship.
  - The Permission Table UML Diagram: 
  ![](img/diagrams/database_permissions.png)
