@@ -117,4 +117,41 @@ The zookeeper-based synchronization principle is very simple,it mainly depends o
 
 `soul` writes the configuration information to the zookeeper node,and it is meticulously designed.
 
-#### WebSocket Synchronization
+#### WebSocket 
+
+The mechanism of `websocket` and `zookeeper` is similar,when the gateway and the `admin` establish a `websocket` connection,`admin` will push all data at once,it will automatically push incremental data to `soul-web` through `websocket` when configured data changes
+
+When we use websocket synchronization,pay attention to reconnect after disconnection, which also called keep heartbeat.`Soul` uses `java-websocket` ,a third-party library,to connect to `websocket`.
+
+```
+public class WebsocketSyncCache extends WebsocketCacheHandler {
+    /**
+     * The Client.
+     */
+    private WebSocketClient client;
+
+    public WebsocketSyncCache(final SoulConfig.WebsocketConfig websocketConfig) {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1,
+                SoulThreadFactory.create("websocket-connect", true));
+         client = new WebSocketClient(new URI(websocketConfig.getUrl())) {
+                @Override
+                public void onOpen(final ServerHandshake serverHandshake) {
+                  //....
+                }
+                @Override
+                public void onMessage(final String result) {
+                  //....
+                }    
+            };
+        //connect
+        client.connectBlocking();
+        //reconnect after disconnection,using scheduling thread pool,execute every 30 seconds
+        executor.scheduleAtFixedRate(() -> {
+            if (client != null && client.isClosed()) {
+                    client.reconnectBlocking();
+            }
+        }, 10, 30, TimeUnit.SECONDS);
+ 	}
+```
+
+#### Http Long Polling
