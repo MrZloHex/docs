@@ -53,16 +53,16 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  - The Database Table UML Diagram: 
  ![](img/diagrams/database_table.png)
  - Detailed design:
-	* One plugin corresponds to multiple selectors,one selector corresponds to multiple rules.
+   * One plugin corresponds to multiple selectors,one selector corresponds to multiple rules.
 
-  	* One selector corresponds to multiple match conditions,one rule corresponds to multiple match conditions.
-  	* Each rule handles differently in corresponding plugin according to field handler,field handler is a kind of data of JSON string type.You can view detail during the use of admin.
-  	* Plugin use database to store user name,role,resource data and relationship.
+   * One selector corresponds to multiple match conditions,one rule corresponds to multiple match conditions.
+   * Each rule handles differently in corresponding plugin according to field handler,field handler is a kind of data of JSON string type.You can view detail during the use of admin.
+   * Plugin use database to store user name,role,resource data and relationship.
  - The Permission Table UML Diagram: 
  ![](img/diagrams/database_permissions.png)
  - Detailed design:
 
-  	* one user corresponds to multiple role,one role corresponds to multiple resources.
+   * one user corresponds to multiple role,one role corresponds to multiple resources.
 
 ### Configuration Flow Introduction
 
@@ -409,24 +409,24 @@ public class SpringCloudRuleHandle implements RuleHandle {
 
  - selector detailed explanation：
 
- 	* name：create your selector with a distinguish name.
- 	* type：custom flow is customized request, full flow is full request. customized request will be handled by the conditions as below, while full request won’t.
- 	* match method: you can combine these conditions with ‘and’ , ‘or’ operators.
- 	* condition：
- 		- uri: filter request with uri method and support fuzzy matching (/\*\*).
- 		- header: filter request with request header.
- 		- query: filter request with query string.
- 		- ip: filter request with your real ip.
- 		- host: filter request with your real host.
- 		- post: not recommend to use.
- 		- condition match:
- 			* match : fuzzy string matching，recommend to combine with uri，support restful matching.（/test/\*\*).
- 			* = : if the values are the same, then they match.
- 			* regEx : regex matching，match characters in regex expression.
- 			* like : string fuzzy matching.
- 	* open option：only work with enabled.
- 	* print log：it will print the matching log with the open option enabled.
- 	* execution order：the smaller will have high priorty to execute among multi-selectors.
+   * name：create your selector with a distinguish name.
+   * type：custom flow is customized request, full flow is full request. customized request will be handled by the conditions as below, while full request won’t.
+   * match method: you can combine these conditions with ‘and’ , ‘or’ operators.
+   * condition：
+     - uri: filter request with uri method and support fuzzy matching (/\*\*).
+     - header: filter request with request header.
+     - query: filter request with query string.
+     - ip: filter request with your real ip.
+     - host: filter request with your real host.
+     - post: not recommend to use.
+     - condition match:
+       * match : fuzzy string matching，recommend to combine with uri，support restful matching.（/test/\*\*).
+       * = : if the values are the same, then they match.
+       * regEx : regex matching，match characters in regex expression.
+       * like : string fuzzy matching.
+   * open option：only work with enabled.
+   * print log：it will print the matching log with the open option enabled.
+   * execution order：the smaller will have high priorty to execute among multi-selectors.
  - the above picture means: when the prefix of the request uri is `/test` and the value of `module` in `header` `istest`, it will redirect to this service `1.1.1.1:8080`.
  - selector advice : combine `uri` conditon and `match` prefix（/contextPath）as the first request filter.
 
@@ -438,24 +438,24 @@ public class SpringCloudRuleHandle implements RuleHandle {
  - rule is the final confirmation about how to execute request logically.
  - rule detailed explanation：
 
- 	* name：create your rule with a distinguish name.
- 	* match method: you can combine these conditions with ‘and’ , ‘or’ operators.
- 	* condition：
- 		- uri: filter request with uri method and support fuzzy matching (/\*\*).
- 		- header: filter request with request header.
- 		- query: filter request with query string.
- 		- ip: filter request with your real ip.
- 		- host: filter request with your real host.
- 		- post: not recommend to use.
- 		- condition match:
- 			* match : fuzzy string matching，recommend to combine with uri，support restful matching.（/test/\*\*）
- 			* = : if the values are the same, then they match.
- 			* regEx : regex matching，match characters in regex expression.
- 			* like : string fuzzy matching.
- 	* open option：only work with enabled.
- 	* print log：it will print the matching log with the open option enabled.
- 	* execution order：the smaller will have high priorty to execute among multi-rules.
- 	* handle: different plugin has different execution method, pls refer to the specific one.
+   * name：create your rule with a distinguish name.
+   * match method: you can combine these conditions with ‘and’ , ‘or’ operators.
+   * condition：
+     - uri: filter request with uri method and support fuzzy matching (/\*\*).
+     - header: filter request with request header.
+     - query: filter request with query string.
+     - ip: filter request with your real ip.
+     - host: filter request with your real host.
+     - post: not recommend to use.
+     - condition match:
+       * match : fuzzy string matching，recommend to combine with uri，support restful matching.（/test/\*\*）
+       * = : if the values are the same, then they match.
+       * regEx : regex matching，match characters in regex expression.
+       * like : string fuzzy matching.
+   * open option：only work with enabled.
+   * print log：it will print the matching log with the open option enabled.
+   * execution order：the smaller will have high priorty to execute among multi-rules.
+   * handle: different plugin has different execution method, pls refer to the specific one.
  - above picture means: when the request `uri` equals to `/http/order/save`, it will execute based on this rule，load strategy is `random`.
  - combine selector means ：when the request `uri` is `/http/order/save`, it will be redicted to `1.1.1.1:8080` by `random` method.
  - rule advice: combine `uri` condition with `match` the real `uri path` condition as the final filter.
