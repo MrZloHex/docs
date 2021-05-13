@@ -39,6 +39,10 @@ This is an asynchronous, high-performance, cross-language, responsive API gatewa
  * [Developer Guide](#developer-guide)
  	* [Custom Filter](#filter-extension)
  	* [File and Image](#file-uploading-and-downloading)
+ 	* [Custom parsing IP and Host](#fetching-correct-ip-address-and-host)
+ 	* [Custom Sign Algorithm](#custom-sign-algorithm)
+ 	* [Developer Soul Client](#a-multilingual-http-client)
+ 	* [Tread](#thread-model)
 
 ## Design
 
@@ -474,12 +478,12 @@ public class SpringCloudRuleHandle implements RuleHandle {
 
  	* it matches the ip of the http caller.
  	* especially in the waf plugin, if you find some ip is unsafe, you can add a match condition with this ip, then it can’t access any more.
- 	* if you use nginx proxy before soul, you can get the right ip with refering to [Custom parsing IP and Host](#parsing-ip-and-host)
+ 	* if you use nginx proxy before soul, you can get the right ip with refering to [Custom parsing IP and Host](#fetching-correct-ip-address-and-host)
  - host matching
 
  	* it matches the host of http caller.
  	* especially in waf plugin, if you find some host is unsafe, you can add a match condition with this host, then it can’t access any more.
- 	* if you use nginx proxy before soul, you can get the right ip with refering to [Custom parsing IP and Host](#parsing-ip-and-host)
+ 	* if you use nginx proxy before soul, you can get the right ip with refering to [Custom parsing IP and Host](#fetching-correct-ip-address-and-host)
  - post matching
 
  	* not recommend to use.
@@ -1370,13 +1374,129 @@ This doc gives a brief description for uploading and downloading files using sou
 
 Soul supports downloading files in streams. There is no need to change anything.
 
+### Fetching Correct IP Address And Host
 
+#### Description
 
+ - This doc demonstrates how to get correct IP address and host when soul serves behind nginx reverse proxy.
+ - After fetched real IP and host, you can match them with plugins and selectors.
 
+#### Default Implementation
 
+ - The embedded implementation in soul is: `org.dromara.soul.web.forwarde.ForwardedRemoteAddressResolver`
+ - You need to config `X-Forwarded-For` in `nginx` first to get correct IP address and host.
 
+#### Implement through a Plugin
 
+Declare a new class named “A” and implements `org.dromara.soul.plugin.api.RemoteAddressResolver`.
 
+```java
+public interface RemoteAddressResolver {
 
+    /**
+     * Resolve inet socket address.
+     *
+     * @param exchange the exchange
+     * @return the inet socket address
+     */
+    default InetSocketAddress resolve(ServerWebExchange exchange) {
+        return exchange.getRequest().getRemoteAddress();
+    }
 
-### Custom parsing IP and Host
+}
+```
+
+Register defined class as a Spring Bean.
+
+```java
+   @Bean
+   public SignService a() {
+         return new A
+   }
+```
+
+### Custom Sign Algorithm
+
+#### Description
+
+Users can customize the signature authentication algorithm to achieve verification.
+
+#### Extension
+
+The default implementation is `org.dromara.soul.plugin.sign.service.DefaultSignService`.
+
+Declare a new class named “A” and implements `org.dromara.soul.plugin.api.SignService`.
+
+```java
+ public interface SignService {
+ 
+     /**
+      * Sign verify pair.
+      *
+      * @param exchange   the exchange
+      * @return the pair
+      */
+     Pair<Boolean, String> signVerify(ServerWebExchange exchange);
+ }
+
+```
+
+When returning true in Pair, the sign verification passes. If there’s false, the String in Pair will be return to the frontend to show.
+
+Register defined class as a Spring Bean.
+
+```java
+   @Bean
+   public SignService a() {
+         return new A
+   }
+```
+
+### A multilingual HTTP client
+
+#### Description
+
+ - This document focuses on how to access gateways for HTTP services in other languages.
+ - How to customize the development of soul-http-client.
+
+#### Customize Http Client
+
+ * Request Method: `POST`
+ * Request Path: `http://soul-admin/soul-client/springmvc-register`, soul-admin represents `IP + Port` of admin
+ * Request Params：passing `JSON` type parameters through the body.
+
+```json
+{
+    "appName": "xxx", //required
+    "context": "/xxx", //required
+    "path": "xxx", //required
+    "pathDesc": "xxx", 
+    "rpcType": "http", //required
+    "host": "xxx", //required
+    "port": xxx, //required
+    "ruleName": "xxx", //required
+    "enabled": "true", //required
+    "registerMetaData": "true" //required
+}
+```
+
+### Thread Model
+
+#### Description
+
+This article gives an introduction to thread models in soul and usage in various scenarios.
+
+#### IO And Work Thread
+
+`spring-webflux` is one of dependencies of soul, and it uses Netty thread model in lower layer.
+
+#### Business Thread
+
+ - Use scheduling thread to execute by default.
+ - A fixed thread pool manages business threads, the number of threads is count in this formula: `cpu * 2 + 1`.
+
+#### Type Switching
+
+ * `reactor.core.scheduler.Schedulers`.
+ * `-Dsoul.scheduler.type=fixed` is a default config. If set to other value, a flexible thread pool will take place it.`Schedulers.elastic()`
+ * `-Dsoul.work.threads = xx` is for configuring number of threads, the default value calculates in following formula `cpu * 2 + 1` with a minimum of 16 threads.
